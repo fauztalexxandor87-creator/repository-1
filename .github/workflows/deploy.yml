@@ -20,8 +20,8 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
-    - name: MinTic Deploy CloudFormation stack
-      run: |
-        aws cloudformation deploy \
-          --template-file template.yml \
-          --stack-name MiPrimerStackConGITHUB \
+    - name: Deploy EC2
+      run: aws CloudFormation deploy --template-file template/ec2.yml --stack-name gitec2test
+
+    - name: Deploy S3
+      run: aws CloudFormation deploy --template-file template/s3.yml --stack-name gits3test
