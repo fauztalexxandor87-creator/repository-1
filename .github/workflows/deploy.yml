@@ -21,7 +21,7 @@ jobs:
         aws-region: us-east-1
 
     - name: Deploy EC2
-      run: aws cloudformation deploy --template-file template/ec2.yml --stack-name gitec2test
+      run: aws cloudformation deploy --template-file Templates/ec2.yml --stack-name gitec2test
 
     - name: Deploy S3
-      run: aws cloudformation deploy --template-file template/s3.yml --stack-name gits3test
+      run: aws cloudformation deploy --template-file Templates/s3.yml --stack-name gits3test
