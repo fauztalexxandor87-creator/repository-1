@@ -2,4 +2,4 @@ Resources:
   MyInstance:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: "noones3"
+      BucketName: "noone"
