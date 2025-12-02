@@ -2,4 +2,4 @@ Resources:
   MyInstance:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: "s3test"
+      BucketName: "changedname-cualnombre-nose"
