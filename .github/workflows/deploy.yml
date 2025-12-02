@@ -24,4 +24,4 @@ jobs:
       run: aws cloudformation deploy --template-file templates/ec2.yml --stack-name gitec2test
 
     - name: Deploy S3
-      run: aws cloudformation deploy --template-file templates/s3.yml --stack-name gits3test
+      run: aws cloudformation deploy --template-file templates/s3.yml --stack-name noones3
