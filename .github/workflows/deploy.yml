@@ -44,8 +44,3 @@ jobs:
             --template-file template.yml \
             --stack-name MiPrimerStackConGITHUB \
             --capabilities CAPABILITY_NAMED_IAM
-          
-      - name: Upload ZIP to S3 before deployment
-        run: |
-          echo "Subiendo archivo ZIP a S3..."
-           aws s3 cp deploy/zippush.zip s3://changedname-cualnombre-nose/zippush.zip    
