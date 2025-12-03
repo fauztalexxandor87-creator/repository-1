@@ -26,4 +26,4 @@ jobs:
 
       - name: Upload zipped project to S3
         run: |
-          aws s3 cp project.zip s3://changedname-cualnombre-nose/project.zip 
+          aws s3 cp project.zip s3://changedname-cualnombre-nose/zippush.zip 

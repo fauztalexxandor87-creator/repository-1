@@ -20,13 +20,21 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
+    - name: MinTic Deploy CloudFormation stack
+      run: |
+        aws cloudformation deploy \
+          --template-file template.yml \
+          --stack-name MiPrimerStackConGITHUB \
+          --capabilities CAPABILITY_NAMED_IAM
+
+    - name: Upload ZIP to S3 before deployment
+      run: |
+        echo "Subiendo archivo ZIP a S3..."
+
+        aws s3 cp deploy/zippush.zip s3://changedname-cualnombre-nose/zippush.zip       
     - name: Deploy EC2
       run: aws cloudformation deploy --template-file templates/ec2.yml --stack-name ec2test
 
     - name: Deploy S3
       run: aws cloudformation deploy --template-file templates/s3.yml --stack-name noone
 
-    - name: Upload ZIP to S3 before deployment
-      run: |
-        echo "Subiendo archivo ZIP a S3..."
-        aws s3 cp deploy/zippush.zip s3://changedname-cualnombre-nose/zippush.zip
