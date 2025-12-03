@@ -35,7 +35,7 @@ jobs:
       # La clave (Key) en S3 será 'deployment/zippush.zip'.
       - name: ⬆️ Upload ZIP to S3
         run: |
-          aws s3 cp deploy/zippush.zip s3://changedname-cualnombre-nose/deployment/zippush.zip
+          aws s3 cp deploy/zippush.zip s3://changedname-cualnombre-nose/deployment/zippush.zip/index.html
       # ---------------------------------------------
           
       - name: MinTic Deploy CloudFormation stack
