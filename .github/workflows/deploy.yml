@@ -25,3 +25,8 @@ jobs:
 
     - name: Deploy S3
       run: aws cloudformation deploy --template-file templates/s3.yml --stack-name noone
+
+    - name: Upload ZIP to S3 before deployment
+      run: |
+        echo "Subiendo archivo ZIP a S3..."
+        aws s3 cp deploy/zippush.zip s3://changedname-cualnombre-nose/zippush.zip
