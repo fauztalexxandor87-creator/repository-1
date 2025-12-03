@@ -10,30 +10,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: MinTic Checkout and download repository
-      uses: actions/checkout@v3
+      - name: MinTic Checkout and download repository
+        uses: actions/checkout@v3
 
-    - name: MinTic Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
+      # --- NUEVO PASO: CREAR EL ARCHIVO ZIP ---
+      # Esto crea 'deploy/zippush.zip' a partir del contenido de tu repositorio.
+      - name: 📦 Create Deployment ZIP
+        run: |
+          mkdir -p deploy
+          # Crea el archivo zippush.zip con todo el contenido del directorio actual,
+          # excluyendo el directorio .git y el directorio 'deploy' que acabamos de crear.
+          zip -r deploy/zippush.zip . -x \*.git\* -x \*deploy/\*
+      # ----------------------------------------
+      
+      - name: MinTic Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
-    - name: MinTic Deploy CloudFormation stack
-      run: |
-        aws cloudformation deploy \
-          --template-file template.yml \
-          --stack-name MiPrimerStackConGITHUB \
-          --capabilities CAPABILITY_NAMED_IAM
+      # --- NUEVO PASO: SUBIR EL ARCHIVO ZIP A S3 ---
+      # NOTA: Debes reemplazar 'TU_NOMBRE_DE_BUCKET_S3' por el nombre real de tu bucket.
+      # La clave (Key) en S3 será 'deployment/zippush.zip'.
+      - name: ⬆️ Upload ZIP to S3
+        run: |
+          aws s3 cp deploy/zippush.zip s3://changedname-cualnombre-nose/deployment/zippush.zip
+      # ---------------------------------------------
           
-    - name: Deploy EC2
-      run: aws cloudformation deploy --template-file templates/ec2.yml --stack-name ec2test
-
-    - name: Deploy S3
-      run: aws cloudformation deploy --template-file templates/s3.yml --stack-name noone
-
-    - name: Upload ZIP to S3 before deployment
-      run: |
-        echo "Subiendo archivo ZIP a S3..."
-         aws s3 cp deploy/zippush.zip s3://changedname-cualnombre-nose/zippush.zip    
+      - name: MinTic Deploy CloudFormation stack
+        run: |
+          aws cloudformation deploy \
+            --template-file template.yml \
+            --stack-name MiPrimerStackConGITHUB \
+            --capabilities CAPABILITY_NAMED_IAM
+          
+      - name: Upload ZIP to S3 before deployment
+        run: |
+          echo "Subiendo archivo ZIP a S3..."
+           aws s3 cp deploy/zippush.zip s3://changedname-cualnombre-nose/zippush.zip    
