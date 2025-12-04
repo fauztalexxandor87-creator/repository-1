@@ -12,7 +12,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
       - name: Validate VPC template
         run: aws cloudformation validate-template --template-body file://templates/vpc.yml
       
@@ -34,7 +38,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: validate
     steps:
-      file://templates/accesskey.yml
+      - uses: actions/checkout@v3
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
     name: Deploy VPC Stack
     run: aws cloudformation deploy --template-file templates/vpc.yml --stack-name MinticVPCStack
 
@@ -44,7 +53,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: vpc
     steps:
-      file://templates/accesskey.yml
+      - uses: actions/checkout@v3
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
     name: Deploy Security Stack
     run: aws cloudformation deploy --template-file templates/security.yml --stack-name MinticSecurityStack
 
@@ -54,7 +68,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: security
     steps:
-      file://templates/accesskey.yml
+      - uses: actions/checkout@v3
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
     name: Deploy EC2 Stack
     run: aws cloudformation deploy --template-file templates/ec2.yml --stack-name MinticEC2Stack
 
@@ -64,7 +83,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: ec2
     steps:
-      file://templates/accesskey.yml
+      - uses: actions/checkout@v3
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
     name: Deploy ALB Stack
     run: aws cloudformation deploy --template-file templates/alb.yml --stack-name MinticALBStack
 
@@ -74,6 +98,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: alb
     steps:
-      file://templates/accesskey.yml
+      - uses: actions/checkout@v3
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
     name: Deploy ASG Stack
     run: aws cloudformation deploy --template-file templates/asg.yml --stack-name MinticASGStack
