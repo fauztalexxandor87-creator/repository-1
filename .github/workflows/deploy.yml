@@ -44,7 +44,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-    run: aws cloudformation deploy --template-file templates/vpc.yml --stack-name MinticVPCStack
+      - run: aws cloudformation deploy --template-file templates/vpc.yml --stack-name MinticVPCStack
 
 
   security:
@@ -58,7 +58,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-    run: aws cloudformation deploy --template-file templates/security.yml --stack-name MinticSecurityStack
+      - run: aws cloudformation deploy --template-file templates/security.yml --stack-name MinticSecurityStack
 
 
   ec2:
@@ -72,7 +72,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-    run: aws cloudformation deploy --template-file templates/ec2.yml --stack-name MinticEC2Stack
+      - run: aws cloudformation deploy --template-file templates/ec2.yml --stack-name MinticEC2Stack
 
 
   alb:
@@ -86,7 +86,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-    run: aws cloudformation deploy --template-file templates/alb.yml --stack-name MinticALBStack
+      - run: aws cloudformation deploy --template-file templates/alb.yml --stack-name MinticALBStack
 
 
   asg:
@@ -100,4 +100,4 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-    run: aws cloudformation deploy --template-file templates/asg.yml --stack-name MinticASGStack
+      - run: aws cloudformation deploy --template-file templates/asg.yml --stack-name MinticASGStack
