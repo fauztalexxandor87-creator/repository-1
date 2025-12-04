@@ -1,8 +1,4 @@
-Resources:
-  MyInstance:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: "changedname-cualnombre-nose"AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: '2010-09-09'
 Description: Crea la VPC, subredes públicas, IGW y tabla de rutas para Mintic
 
 Resources:
