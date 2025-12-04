@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: validate
     steps:
-      file://.github/workflows/accesskey.yml
+      file://templates/accesskey.yml
     name: Deploy VPC Stack
     run: aws cloudformation deploy --template-file templates/vpc.yml --stack-name MinticVPCStack
 
@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: vpc
     steps:
-      file://.github/workflows/accesskey.yml
+      file://templates/accesskey.yml
     name: Deploy Security Stack
     run: aws cloudformation deploy --template-file templates/security.yml --stack-name MinticSecurityStack
 
@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: security
     steps:
-      file://.github/workflows/accesskey.yml
+      file://templates/accesskey.yml
     name: Deploy EC2 Stack
     run: aws cloudformation deploy --template-file templates/ec2.yml --stack-name MinticEC2Stack
 
@@ -64,7 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: ec2
     steps:
-      file://.github/workflows/accesskey.yml
+      file://templates/accesskey.yml
     name: Deploy ALB Stack
     run: aws cloudformation deploy --template-file templates/alb.yml --stack-name MinticALBStack
 
@@ -74,6 +74,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: alb
     steps:
-      file://.github/workflows/accesskey.yml
+      file://templates/accesskey.yml
     name: Deploy ASG Stack
     run: aws cloudformation deploy --template-file templates/asg.yml --stack-name MinticASGStack
