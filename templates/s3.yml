@@ -1,5 +1,0 @@
-Resources:
-  MyInstance:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: "changedname-cualnombre-nose"

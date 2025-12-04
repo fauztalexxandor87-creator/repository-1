@@ -1,4 +1,4 @@
-name: MinTic Deploy to AWS CloudFormation
+name: MinTic Deploy to AWS CloudFormation (Multi-Stage)
 
 on:
   push:
@@ -6,41 +6,74 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+
+  validate:
+    name: Stage 1 - Validate Templates
     runs-on: ubuntu-latest
-
     steps:
-      - name: MinTic Checkout and download repository
-        uses: actions/checkout@v3
-
-      # --- NUEVO PASO: CREAR EL ARCHIVO ZIP ---
-      # Esto crea 'deploy/zippush.zip' a partir del contenido de tu repositorio.
-      - name: 📦 Create Deployment ZIP
-        run: |
-          mkdir -p deploy
-          # Crea el archivo zippush.zip con todo el contenido del directorio actual,
-          # excluyendo el directorio .git y el directorio 'deploy' que acabamos de crear.
-          zip -r deploy/zippush.zip . -x \*.git\* -x \*deploy/\*
-      # ----------------------------------------
+      - uses: actions/checkout@v3
       
-      - name: MinTic Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+      - name: Validate VPC template
+        run: aws cloudformation validate-template --template-body file://templates/vpc.yml
+      
+      - name: Validate Security template
+        run: aws cloudformation validate-template --template-body file://templates/security.yml
+      
+      - name: Validate EC2 template
+        run: aws cloudformation validate-template --template-body file://templates/ec2.yml
+      
+      - name: Validate ALB template
+        run: aws cloudformation validate-template --template-body file://templates/alb.yml
+      
+      - name: Validate ASG template
+        run: aws cloudformation validate-template --template-body file://templates/asg.yml
 
-      # --- NUEVO PASO: SUBIR EL ARCHIVO ZIP A S3 ---
-      # NOTA: Debes reemplazar 'TU_NOMBRE_DE_BUCKET_S3' por el nombre real de tu bucket.
-      # La clave (Key) en S3 será 'deployment/zippush.zip'.
-      - name: ⬆️ Upload ZIP to S3
-        run: |
-          aws s3 cp deploy/zippush.zip s3://changedname-cualnombre-nose/deployment/zippush.zip/index.html
-      # ---------------------------------------------
-          
-      - name: MinTic Deploy CloudFormation stack
-        run: |
-          aws cloudformation deploy \
-            --template-file template.yml \
-            --stack-name MiPrimerStackConGITHUB \
-            --capabilities CAPABILITY_NAMED_IAM
+
+  vpc:
+    name: Stage 2 - Deploy VPC
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      file://.github/workflows/accesskey.yml
+    name: Deploy VPC Stack
+    run: aws cloudformation deploy --template-file templates/vpc.yml --stack-name MinticVPCStack
+
+
+  security:
+    name: Stage 3 - Deploy Security
+    runs-on: ubuntu-latest
+    needs: vpc
+    steps:
+      file://.github/workflows/accesskey.yml
+    name: Deploy Security Stack
+    run: aws cloudformation deploy --template-file templates/security.yml --stack-name MinticSecurityStack
+
+
+  ec2:
+    name: Stage 4 - Deploy EC2 Static Instances
+    runs-on: ubuntu-latest
+    needs: security
+    steps:
+      file://.github/workflows/accesskey.yml
+    name: Deploy EC2 Stack
+    run: aws cloudformation deploy --template-file templates/ec2.yml --stack-name MinticEC2Stack
+
+
+  alb:
+    name: Stage 5 - Deploy ALB
+    runs-on: ubuntu-latest
+    needs: ec2
+    steps:
+      file://.github/workflows/accesskey.yml
+    name: Deploy ALB Stack
+    run: aws cloudformation deploy --template-file templates/alb.yml --stack-name MinticALBStack
+
+
+  asg:
+    name: Stage 6 - Deploy Auto Scaling Group
+    runs-on: ubuntu-latest
+    needs: alb
+    steps:
+      file://.github/workflows/accesskey.yml
+    name: Deploy ASG Stack
+    run: aws cloudformation deploy --template-file templates/asg.yml --stack-name MinticASGStack

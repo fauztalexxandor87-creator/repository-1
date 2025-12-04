@@ -9,10 +9,203 @@ Resources:
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash
-          # Utiliza esto para tus datos de usuario
-          # Instala httpd (Version: Linux 2)
           yum update -y
           yum install -y httpd
           systemctl start httpd
           systemctl enable httpd
-          echo "<h1>Hello World from $(hostname -f)</h1>" > /var/www/html/index.html
+
+          # Crear archivo HTML completo
+          cat << 'EOF' > /var/www/html/index.html
+          <!DOCTYPE html>
+          <html lang="es">
+          <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width,initial-scale=1" />
+            <title>TTS Español — Generador de audio</title>
+            <style>
+              body {
+                font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+                max-width: 760px;
+                margin: 32px auto;
+                padding: 18px;
+                line-height: 1.45;
+                color: #0f172a;
+                background: #f8fafc;
+              }
+              h1 { font-size: 1.6rem; margin-bottom: 6px; }
+              p.lead { color: #334155; margin-top: 0; }
+              label { display:block; margin-top:12px; font-weight:600; }
+              textarea { width:100%; min-height:140px; padding:10px; font-size:16px; border-radius:8px; border:1px solid #cbd5e1; resize:vertical; }
+              select,input[type="range"] { width:100%; padding:8px; border-radius:6px; border:1px solid #cbd5e1; background:white; }
+              .controls { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+              button {
+                background:#0ea5a4; color:white; border:none; padding:10px 14px; border-radius:8px; cursor:pointer;
+                box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+              }
+              button.secondary { background:#64748b; }
+              .small { font-size:0.9rem; color:#475569; margin-top:6px; }
+              .row { display:flex; gap:8px; align-items:center; }
+              .row > * { flex: 1 1 auto; }
+              .footer { margin-top:18px; font-size:0.9rem; color:#475569; }
+              .status { margin-top:10px; font-weight:600; color:#0f172a; }
+            </style>
+          </head>
+          <body>
+            <h1>Generador de audio (TTS) en Español</h1>
+            <p class="lead">Escribe un texto y elige una voz en español para escucharlo. Funciona mejor en Chrome y Edge. Si no aparecen voces en español, espera unos segundos para que el navegador cargue las voces o prueba otro navegador.</p>
+
+            <label for="texto">Texto a convertir en audio</label>
+            <textarea id="texto" placeholder="Escribe aquí el texto...">Hola. Este es un ejemplo de texto en español. Puedes cambiar la voz, la velocidad y el tono.</textarea>
+
+            <label for="voices">Voz (filtradas por idioma: español si están disponibles)</label>
+            <select id="voices"></select>
+
+            <div class="row">
+              <div>
+                <label for="rate">Velocidad: <span id="rateValue">1</span>x</label>
+                <input id="rate" type="range" min="0.5" max="2" step="0.1" value="1">
+              </div>
+              <div>
+                <label for="pitch">Tono: <span id="pitchValue">1</span></label>
+                <input id="pitch" type="range" min="0.5" max="2" step="0.1" value="1">
+              </div>
+            </div>
+
+            <label for="volume">Volumen: <span id="volumeValue">1</span></label>
+            <input id="volume" type="range" min="0" max="1" step="0.05" value="1">
+
+            <div class="controls">
+              <button id="btnSpeak">▶️ Reproducir</button>
+              <button id="btnPause" class="secondary">⏸ Pausar</button>
+              <button id="btnResume" class="secondary">⏵ Reanudar</button>
+              <button id="btnCancel" class="secondary">✖ Detener</button>
+            </div>
+
+            <div class="status" id="status">Estado: listo</div>
+
+            <div class="footer">
+              <p class="small">Limitación: la API Web Speech (SpeechSynthesis) reproduce sonido en el navegador, pero no ofrece una forma nativa y estándar para descargar directamente un archivo de audio. Si necesitas descargar el audio, puedo ayudarte a integrar un servicio TTS que genere archivos MP3/OGG.</p>
+            </div>
+
+            <script>
+              const textoEl = document.getElementById('texto');
+              const voicesSelect = document.getElementById('voices');
+              const rateEl = document.getElementById('rate');
+              const pitchEl = document.getElementById('pitch');
+              const volumeEl = document.getElementById('volume');
+              const btnSpeak = document.getElementById('btnSpeak');
+              const btnPause = document.getElementById('btnPause');
+              const btnResume = document.getElementById('btnResume');
+              const btnCancel = document.getElementById('btnCancel');
+              const statusEl = document.getElementById('status');
+              const rateValue = document.getElementById('rateValue');
+              const pitchValue = document.getElementById('pitchValue');
+              const volumeValue = document.getElementById('volumeValue');
+
+              let voices = [];
+              let utterance = null;
+
+              function actualizarStatus(s) {
+                statusEl.textContent = 'Estado: ' + s;
+              }
+
+              function cargarVoces() {
+                voices = speechSynthesis.getVoices() || [];
+                voicesSelect.innerHTML = '';
+
+                const spanish = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith('es'));
+                const list = spanish.length ? spanish : voices;
+
+                list.forEach(v => {
+                  const opt = document.createElement('option');
+                  opt.value = v.name + '|' + v.lang;
+                  opt.textContent = `${v.name} — ${v.lang}`;
+                  voicesSelect.appendChild(opt);
+                });
+
+                if (voicesSelect.options.length === 0) {
+                  const opt = document.createElement('option');
+                  opt.textContent = 'No se encontraron voces (intenta recargar o usar Chrome/Edge)';
+                  voicesSelect.appendChild(opt);
+                }
+              }
+
+              speechSynthesis.onvoiceschanged = cargarVoces;
+              setTimeout(cargarVoces, 200);
+
+              function crearUtterance() {
+                if (speechSynthesis.speaking) {
+                  speechSynthesis.cancel();
+                }
+
+                const text = textoEl.value.trim();
+                if (!text) {
+                  actualizarStatus('introduce texto para reproducir');
+                  return null;
+                }
+
+                const u = new SpeechSynthesisUtterance(text);
+
+                const sel = voicesSelect.value;
+                if (sel) {
+                  const [name, lang] = sel.split('|');
+                  const found = (speechSynthesis.getVoices() || []).find(v => v.name === name) ||
+                                (speechSynthesis.getVoices() || []).find(v => v.lang === lang);
+                  if (found) u.voice = found;
+                }
+
+                u.rate = parseFloat(rateEl.value);
+                u.pitch = parseFloat(pitchEl.value);
+                u.volume = parseFloat(volumeEl.value);
+                u.lang = u.voice?.lang || 'es-ES';
+
+                u.onstart = () => actualizarStatus('reproduciendo...');
+                u.onpause = () => actualizarStatus('pausado');
+                u.onresume = () => actualizarStatus('reproduciendo (reanudado)');
+                u.onend = () => actualizarStatus('finalizado');
+                u.onerror = (e) => actualizarStatus('error: ' + (e.error || 'desconocido'));
+
+                return u;
+              }
+
+              btnSpeak.addEventListener('click', () => {
+                if (!('speechSynthesis' in window)) {
+                  actualizarStatus('Tu navegador no soporta SpeechSynthesis');
+                  return;
+                }
+                utterance = crearUtterance();
+                if (utterance) {
+                  speechSynthesis.speak(utterance);
+                }
+              });
+
+              btnPause.addEventListener('click', () => {
+                if (speechSynthesis.speaking && !speechSynthesis.paused) {
+                  speechSynthesis.pause();
+                }
+              });
+
+              btnResume.addEventListener('click', () => {
+                if (speechSynthesis.paused) {
+                  speechSynthesis.resume();
+                }
+              });
+
+              btnCancel.addEventListener('click', () => {
+                if (speechSynthesis.speaking || speechSynthesis.paused) {
+                  speechSynthesis.cancel();
+                  actualizarStatus('detenido');
+                }
+              });
+
+              rateEl.addEventListener('input', () => rateValue.textContent = rateEl.value);
+              pitchEl.addEventListener('input', () => pitchValue.textContent = pitchEl.value);
+              volumeEl.addEventListener('input', () => volumeValue.textContent = volumeEl.value);
+
+              rateValue.textContent = rateEl.value;
+              pitchValue.textContent = pitchEl.value;
+              volumeValue.textContent = volumeEl.value;
+            </script>
+          </body>
+          </html>
+          EOF
